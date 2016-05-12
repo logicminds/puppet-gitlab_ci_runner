@@ -205,7 +205,7 @@ define gitlab_ci_multi_runner::runner (
     }
     if $docker_allowed_services {
       $docker_allowed_services_opt = $docker_allowed_services.map | String $service | {
-        "--docker-allowed-images=\"${service}\""
+        "--docker-allowed-services=\"${service}\""
       }
     }
 
