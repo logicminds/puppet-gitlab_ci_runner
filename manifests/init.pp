@@ -8,7 +8,6 @@ class gitlab_ci_multi_runner(
   Optional[String] $admin_email = '',
 ) {
 
-  include gitlab_ci_multi_runner::profiles::docker
   $runner_instances.each |String $user, $options| {
       $toml_file_path = "/home/${user}/.gitlab-runner/config.toml"
       $instance_parameters = merge({'user' => $user, 'admin_email' => $admin_email, 'toml_file_path' => $toml_file_path,
