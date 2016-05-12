@@ -120,7 +120,7 @@ define gitlab_ci_multi_runner::runner (
     # Used by the Docker and Docker SSH executors.         #
     ########################################################
 
-    $docker_image,
+    $docker_image = undef,
     $docker_privileged = undef,
     $docker_mysql = undef,
     $docker_postgres = undef,
