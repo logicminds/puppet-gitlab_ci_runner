@@ -1,0 +1,11 @@
+fixtures:
+    symlinks:
+      gitlab_ci_multi_runner: "#{source_dir}"
+    repositories:
+      stdlib:
+        repo: https://github.com/puppetlabs/puppetlabs-stdlib.git
+        ref: 4.11.0
+      archive: git@gitlab.com:singlestone/puppet-archive.git
+      ssh: git@gitlab.com:singlestone/ssh.git
+      pe_gem: https://github.com/puppetlabs/puppetlabs-pe_gem.git
+    forge_modules:

@@ -1,0 +1,37 @@
+stages:
+  - validate
+  - lint
+  - test
+
+before_script:
+  - bundle config
+  - bundle install
+  - ruby --version
+  - echo "Puppet $(bundle exec puppet --version)"
+  - echo "Facter $(facter --version)"
+  # Run ssh-agent (inside the build environment)
+  - eval $(ssh-agent -s)
+  # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+
+validate:
+  stage: validate
+  tags: ['puppet']
+  script:
+    - bundle exec rake validate
+
+lint:
+  stage: lint
+  tags: ['puppet']
+  script:
+    - bundle exec rake lint
+
+spec_tests:
+  tags: ['puppet']
+  stage: test
+  script:
+    - bundle exec rake spec
+
+variables:
+  FUTURE_PARSER: 'yes'
+#http://doc.gitlab.com/ce/ci/yaml/README.html
