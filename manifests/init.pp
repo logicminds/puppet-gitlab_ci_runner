@@ -22,14 +22,6 @@ class gitlab_ci_multi_runner(
         'executor' => $default_executor}, $options['runner_parameters'])
       create_resources(gitlab_ci_multi_runner::runner, {"gitlab_runner_${user}" => $runner_options})
 
-      # gitlab_ci_multi_runner::profiles::puppet_pe_38{ $user:
-      #   user                => $user,
-      #   user_path           => "/home/${user}",
-      #   puppet_gems_bundle  => $options['puppet_gems_bundle'],
-      #   puppet_package_name => $options['puppet_package_name'],
-      #
-      # }
-
   }
 
   Package['git'] -> Class['gitlab_ci_multi_runner::git_lfs']
