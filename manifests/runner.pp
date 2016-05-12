@@ -7,6 +7,8 @@
 #
 # === Parameters
 #
+# [*docker_host]
+
 # [*gitlab_ci_url*]
 #   URL of the Gitlab Server.
 #   Default: undef.
@@ -122,10 +124,7 @@ define gitlab_ci_multi_runner::runner (
 
     $docker_image = undef,
     $docker_privileged = undef,
-    $docker_mysql = undef,
-    $docker_postgres = undef,
-    $docker_redis = undef,
-    $docker_mongo = undef,
+    $docker_services = undef,
     $docker_allowed_images = undef,
     $docker_allowed_services = undef,
 
@@ -194,39 +193,24 @@ define gitlab_ci_multi_runner::runner (
         $docker_privileged_opt = '--docker-privileged'
     }
 
-    if $docker_mysql {
-        $docker_mysql_opt = "--docker-mysql=${docker_mysql}"
-    }
-
-    if $docker_postgres {
-        $docker_postgres_opt = "--docker-postgres=${docker_postgres}"
-    }
-
-    if $docker_redis {
-        $docker_redis_opt = "--docker-redis=${docker_redis}"
-    }
-
-    if $docker_mongo {
-        $docker_mongo_opt = "--docker-mongo=${docker_mongo}"
+    if $docker_services {
+        $docker_services_opt = "--docker-mysql=${docker_mysql}"
     }
 
     if $docker_allowed_images {
-        $docker_allowed_images_opt = inline_template(
-          "<% @docker_allowed_images.each do |image| -%>
-            --docker-allowed-images=<%= \"'#{image}'\" -%>
-            <% end -%>"
-        )
-    }
+        $docker_allowed_images_opt = $docker_allowed_images.map | String $image | {
+          "--docker-allowed-images=\"${image}\""
+        }
 
+    }
     if $docker_allowed_services {
-        $docker_allowed_services_opt = inline_template(
-          "<% @docker_allowed_services.each do |service| -%>
-            --docker-allowed-services=<%= \"'#{service}'\" -%>
-            <% end -%>"
-        )
+      $docker_allowed_services_opt = $docker_allowed_services.map | String $service | {
+        "--docker-allowed-images=\"${service}\""
+      }
     }
 
-    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_mysql_opt} ${docker_postgres_opt} ${docker_redis_opt} ${docker_mongo_opt} ${docker_allowed_images_opt} ${docker_allowed_services_opt}"
+
+    $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_allowed_images_opt.join(' ')} ${docker_allowed_services_opt.join(' ')}"
 
     if $parallels_vm {
         $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
