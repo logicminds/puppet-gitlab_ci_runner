@@ -67,7 +67,6 @@ define gitlab_ci_multi_runner::instance(
   }
   # Install Service as user instance
   if $install_service {
-    start_repl
     exec { "Enable ${service_name}":
       command   => "${runner_ci_binary} install --user ${user} --service ${service_name} --config ${toml_file_path} --working-directory ${home_path}",
       user      => root,
