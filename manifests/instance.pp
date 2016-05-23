@@ -7,7 +7,7 @@ define gitlab_ci_multi_runner::instance(
   $home_path       = "/home/${name}",
   $download_url    = 'https://gitlab-ci-multi-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-ci-multi-runner-linux-amd64',
   $create_home_dir = true,
-  $service_name    = "gitlab_runner_${name}",
+  $service_name    = "gitlab_${name}",
   $install_service = true,
   $ensure_service  = 'running',
   $manage_service  = true,
@@ -67,6 +67,7 @@ define gitlab_ci_multi_runner::instance(
   }
   # Install Service as user instance
   if $install_service {
+    start_repl
     exec { "Enable ${service_name}":
       command   => "${runner_ci_binary} install --user ${user} --service ${service_name} --config ${toml_file_path} --working-directory ${home_path}",
       user      => root,
