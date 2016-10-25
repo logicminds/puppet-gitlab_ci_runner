@@ -127,7 +127,7 @@ define gitlab_ci_multi_runner::runner (
     $docker_services = undef,
     $docker_allowed_images = undef,
     $docker_allowed_services = undef,
-
+    $concurrency         = '3',
     ########################################################
     # Parallels Options                                    #
     # Used by the "Parallels" executor.                    #
@@ -243,6 +243,7 @@ define gitlab_ci_multi_runner::runner (
         mode   => '0640',
         before => Exec["Register-${name}"]
     }
+
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
@@ -252,7 +253,22 @@ define gitlab_ci_multi_runner::runner (
         path        => [$home_path, '/bin', '/usr/bin', '/usr/local/bin'],
         environment => ["HOME=${home_path}"],
         provider    => shell,
-        unless      => "grep ${description} ${toml_file}",
         cwd         => $home_path,
+        refreshonly => true,
+    }
+    ini_setting { "concurrency":
+      ensure  => present,
+      path    => $toml_file_path,
+      setting => 'concurrent',
+      value   => $concurrency,
+      require => File[$toml_file],
+    }
+    ini_setting { "options_checksum":
+      ensure  => present,
+      path    => $toml_file_path,
+      setting => 'options_checksum',
+      value   => sha1($opts),
+      require => File[$toml_file],
+      notify  => Exec["Register-${name}"]
     }
 }
