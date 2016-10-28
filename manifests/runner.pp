@@ -259,7 +259,7 @@ define gitlab_ci_multi_runner::runner (
     unless defined(Ini_setting['concurrency']) {
         ini_setting { "concurrency":
           ensure  => present,
-          path    => $toml_file_path,
+          path    => $toml_file,
           setting => 'concurrent',
           value   => $concurrency,
           require => File[$toml_file],
@@ -268,7 +268,7 @@ define gitlab_ci_multi_runner::runner (
     unless defined(Ini_setting['options_checksum']) {
         ini_setting { "options_checksum":
           ensure  => present,
-          path    => $toml_file_path,
+          path    => $toml_file,
           setting => 'options_checksum',
           value   => sha1($opts),
           require => File[$toml_file],
