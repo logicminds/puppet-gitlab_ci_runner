@@ -127,7 +127,7 @@ define gitlab_ci_multi_runner::runner (
     $docker_services = undef,
     $docker_allowed_images = undef,
     $docker_allowed_services = undef,
-    $concurrency         = '3',
+    $concurrency         = hiera('gitlab_ci_multi_runner::concurrency', '3'),
     ########################################################
     # Parallels Options                                    #
     # Used by the "Parallels" executor.                    #
