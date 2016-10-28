@@ -256,19 +256,23 @@ define gitlab_ci_multi_runner::runner (
         cwd         => $home_path,
         refreshonly => true,
     }
-    ini_setting { "concurrency":
-      ensure  => present,
-      path    => $toml_file_path,
-      setting => 'concurrent',
-      value   => $concurrency,
-      require => File[$toml_file],
+    unless defined(Ini_setting['concurrency']) {
+        ini_setting { "concurrency":
+          ensure  => present,
+          path    => $toml_file_path,
+          setting => 'concurrent',
+          value   => $concurrency,
+          require => File[$toml_file],
+        }
     }
-    ini_setting { "options_checksum":
-      ensure  => present,
-      path    => $toml_file_path,
-      setting => 'options_checksum',
-      value   => sha1($opts),
-      require => File[$toml_file],
-      notify  => Exec["Register-${name}"]
-    }
+    unless defined(Ini_setting['options_checksum']) {
+        ini_setting { "options_checksum":
+          ensure  => present,
+          path    => $toml_file_path,
+          setting => 'options_checksum',
+          value   => sha1($opts),
+          require => File[$toml_file],
+          notify  => Exec["Register-${name}"]
+        }
+     }   
 }
