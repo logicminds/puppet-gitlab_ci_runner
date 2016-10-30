@@ -210,8 +210,11 @@ define gitlab_ci_multi_runner::runner (
       }
     }
 
+
     if $docker_volumes {
       $docker_volumes_opt = $docker_volumes.map | $k, $v | { "$k:$v" }
+    } else {
+      $docker_volumes_opt = ''
     }
 
     $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_allowed_images_opt.join(' ')} ${docker_allowed_services_opt.join(' ')}"
@@ -278,5 +281,5 @@ define gitlab_ci_multi_runner::runner (
           require => File[$toml_file],
           notify  => Exec["Register-${name}"]
         }
-     }   
+     }
 }
