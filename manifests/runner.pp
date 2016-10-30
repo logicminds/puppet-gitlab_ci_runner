@@ -250,7 +250,6 @@ define gitlab_ci_multi_runner::runner (
         mode   => '0640',
         before => Exec["Register-${name}"]
     }
-    to_toml({})
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
