@@ -269,7 +269,7 @@ define gitlab_ci_multi_runner::runner (
           path    => $toml_file,
           setting => 'concurrent',
           value   => $concurrency,
-          require => File[$toml_file],
+          require => Exec["Register-${name}"],
         }
     }
     unless defined(Ini_setting['options_checksum']) {
