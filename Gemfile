@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 group :test do
     gem "rake"
-    gem "puppet", ENV['PUPPET_VERSION'] || '~> 3.8.5'
+    gem "puppet", ENV['PUPPET_VERSION'] || '~> 4.7.0'
     gem "rspec-puppet"
     gem "puppetlabs_spec_helper"
     gem 'rspec-puppet-utils'
@@ -11,6 +11,8 @@ group :test do
     gem 'puppet-syntax'
     gem 'puppet-lint'
     gem 'puppet-retrospec'
+    gem 'toml'
+    gem 'puppet-repl'
 end
 
 group :integration do

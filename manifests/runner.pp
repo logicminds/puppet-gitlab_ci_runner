@@ -250,7 +250,7 @@ define gitlab_ci_multi_runner::runner (
         mode   => '0640',
         before => Exec["Register-${name}"]
     }
-
+    to_toml({})
     # Register a new runner - this is where the magic happens.
     # Only if the config.toml file doesn't already contain an entry.
     # --non-interactive means it won't ask us for things, it'll just fail out.
@@ -272,13 +272,10 @@ define gitlab_ci_multi_runner::runner (
           require => Exec["Register-${name}"],
         }
     }
-    unless defined(Ini_setting['options_checksum']) {
-        ini_setting { "options_checksum":
+    unless defined(File["${home_path}/.options_checksum"]) {
+        file { "${home_path}/.options_checksum":
           ensure  => present,
-          path    => $toml_file,
-          setting => 'options_checksum',
-          value   => sha1($opts),
-          require => File[$toml_file],
+          content   => sha1($opts),
           notify  => Exec["Register-${name}"]
         }
      }
