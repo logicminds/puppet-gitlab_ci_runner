@@ -117,6 +117,7 @@ define gitlab_ci_multi_runner::runner (
     $token = undef,
     $env = undef,
     $executor = undef,
+    Optional[Hash] $docker_volumes,
     ########################################################
     # Docker Options                                       #
     # Used by the Docker and Docker SSH executors.         #
@@ -209,11 +210,14 @@ define gitlab_ci_multi_runner::runner (
       }
     }
 
+    if $docker_volumes {
+      $docker_volumes_opt = $docker_volumes.map | $k, $v | { "$k:$v" }
+    }
 
     $docker_opts = "${docker_image_opt} ${docker_privileged_opt} ${docker_allowed_images_opt.join(' ')} ${docker_allowed_services_opt.join(' ')}"
 
     if $parallels_vm {
-        $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
+      $parallels_vm_opt = "--parallels-vm=${parallels_vm}"
     }
 
     if $ssh_host {
@@ -251,7 +255,7 @@ define gitlab_ci_multi_runner::runner (
         command     => "gitlab-ci-multi-runner register --non-interactive ${opts}",
         user        => $user,
         path        => [$home_path, '/bin', '/usr/bin', '/usr/local/bin'],
-        environment => ["HOME=${home_path}"],
+        environment => ["HOME=${home_path}", "DOCKER_VOLUMES=${docker_volumes_opt}"],
         provider    => shell,
         cwd         => $home_path,
         refreshonly => true,
