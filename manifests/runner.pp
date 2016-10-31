@@ -242,7 +242,6 @@ define gitlab_ci_multi_runner::runner (
     $ssh_opts = "${ssh_host_opt} ${ssh_port_opt} ${ssh_user_opt} ${ssh_password_opt}"
 
     $opts = "${runner_opts} ${executor_opt} ${docker_opts} ${parallels_vm_opt} ${ssh_opts}"
-
     file{$toml_file:
         ensure => file,
         owner  => $user,

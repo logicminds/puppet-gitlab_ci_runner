@@ -14,9 +14,14 @@ define gitlab_ci_multi_runner::instance(
   $ssh_rsa_private_key = undef,
   $ssh_rsa_public_key  = undef,
   $ssh_key_password    = '',
-  Optional[String] $admin_email = ''
+  Hash $runners        = {},
+  Hash $runner_default_options = {},
+  Optional[String] $admin_email = '',
+  $mail_key = false,
 ) {
   include archive
+
+  $runner_names = $runners.keys.map | $r | { "${name}_${r}" }
 
   $runner_ci_binary = "${home_path}/gitlab-ci-multi-runner"
   user{$user:
@@ -29,7 +34,7 @@ define gitlab_ci_multi_runner::instance(
     file{$home_path:
       ensure  => directory,
       owner   => $user,
-      group   => $group,
+      group   => $user,
       require => User[$user],
       before  => [File["${home_path}/.gitlab-runner"],Archive[$runner_ci_binary]]
     }
@@ -72,18 +77,18 @@ define gitlab_ci_multi_runner::instance(
       user      => root,
       provider  => shell,
       creates   => $service_file,
-      subscribe => Archive[$runner_ci_binary],
+      require   => [File[$runner_ci_binary], Gitlab_ci_multi_runner::Runner[$runner_names]],
     }
     if $manage_service {
       service{$service_name:
         ensure    => $ensure_service,
         enable    => true,
         hasstatus => true,
-        subscribe => Exec["Enable ${service_name}"]
+        require   => Exec["Enable ${service_name}"]
       }
     }
   }
-  ssh::ssh_keys{ "${user} - runner_key":
+  gitlab_ci_multi_runner::ssh_keys{ "${user} - runner_key":
     system_key_user      => $user,
     system_user_home_dir => $home_path,
     key_password         => $ssh_key_password,
@@ -96,15 +101,22 @@ define gitlab_ci_multi_runner::instance(
     ensure  => present,
     owner   => $user,
     group   => $user,
-    require => Ssh::Ssh_keys["${user} - runner_key"],
+    require => Gitlab_ci_multi_runner::Ssh_keys["${user} - runner_key"],
     content => "Host *\nControlMaster auto\nControlPath ${home_path}/.ssh/ssh-%r@%h:%p"
   }
-  if $admin_email != '' {
+  if $admin_email != '' and $mail_key == true {
     exec{"send ${user} ssh key":
       path => ['/bin', '/usr/sbin', '/usr/local/bin'],
       command => "cat ${ssh_rsa_public_key} | mail -s '${user} ssh key, add this to gitlab ci_runner ssh keys' ${admin_email}",
       refreshonly => true,
-      subscribe => Ssh::Ssh_keys["${user} - runner_key"]
+      subscribe => Gitlab_ci_multi_runner::Ssh_keys["${user} - runner_key"]
+    }
+  }
+  $runners.each | $r_name, $runner | {
+    $runner_name = "${name}_${r_name}"
+    gitlab_ci_multi_runner::runner{$runner_name:
+      * => merge($runner_default_options,{'user' => $user, 'toml_file' => $toml_file_path},$runner),
+      require => File[$runner_ci_binary],
     }
   }
 }

@@ -7,21 +7,23 @@ class gitlab_ci_multi_runner(
   String $default_executor = 'shell',
   Optional[String] $admin_email = '',
 ) {
+  $runner_options = {
+    'gitlab_ci_url' => $default_gitlab_ci_url,
+    'token' => $default_ci_token,
+    'tags' => $default_tags,
+    'executor' => $default_executor
+  }
 
   $runner_instances.each |String $user, $options| {
       $toml_file_path = "/home/${user}/.gitlab-runner/config.toml"
-      $instance_parameters = merge({'user' => $user, 'admin_email' => $admin_email, 'toml_file_path' => $toml_file_path,
-        'download_url' => $default_download_url},$options['instance_parameters'])
-      create_resources(gitlab_ci_multi_runner::instance, {$user => $instance_parameters})
-      # if the instance options do not specify the required options, defaults will be used
-      # otherwise the defaults will be overridden.
-      $runner_options = merge({'user' => $user, 'toml_file' => $toml_file_path,
-        'gitlab_ci_url' => $default_gitlab_ci_url, 'token' => $default_ci_token,
-        'require' => Gitlab_ci_multi_runner::Instance[$user],
-        'tags' => $default_tags,
-        'executor' => $default_executor}, $options['runner_parameters'])
-      create_resources(gitlab_ci_multi_runner::runner, {"gitlab_runner_${user}" => $runner_options})
-
+      $instance_parameters = merge({'user' => $user,
+        'admin_email' => $admin_email,
+        'toml_file_path' => $toml_file_path,
+        'download_url' => $default_download_url,
+        'runner_default_options' => $runner_options}, $options)
+      gitlab_ci_multi_runner::instance{$instance_parameters['user']:
+        * => $instance_parameters
+      }
   }
 
   Package['git'] -> Class['gitlab_ci_multi_runner::git_lfs']
